@@ -84,9 +84,9 @@ Order (ORD-FEAT-001)
 - **未実装・未テスト検出:** StrictDoc自体ではなく今回追加したPolicy Checkerが、Behaviorのproduction relation、Behavior配下のScenario、Scenarioのpytest relationを検査し、欠落でexit 1を返します。JUnitがあれば未実行・失敗もpassing coverageとして区別します。
 - **JUnit:** StrictDocがJUnit XMLを読み、結果とテスト関数を表示するところまで確認しました。機能は実験的な扱いであり、Python test classnameとStrictDocのパス推定に依存します。テスト実行後にレポートを更新する必要もあります。
 - **Issue / SSOT / Agent:** GitHub Issueとは独立した恒久的仕様の置き場にはなり得ます。仕様ノード、UID、Source/Testのrelation markerが一緒にGit管理されるので、Agentが仕様を読んで実装する入力にも適します。ただしFeature/Behavior/Scenarioの型制約、受け入れ条件や欠落検査を強く求めるなら、独自Grammar・CI検査が必要です。
-- **採用判断:** StrictDocは「仕様とコード/テストの追跡・レビュー」を可視化する用途には候補になります。今回のCI policyで欠落検出は可能になりました。一方、BDDシナリオ管理や機能ツリー専用DBとしては、Document treeとRelation treeの違い、型制約の弱さ、JUnit結果から仕様への間接リンクが残るため、強い編集時制約が必要になった場合にCustom Grammarを検討します。
+- **採用判断:** StrictDocは「仕様とコード/テストの追跡・レビュー」を可視化する用途には候補になります。今回のPolicy Checkerで欠落検出は可能になりました。一方、BDDシナリオ管理や機能ツリー専用DBとしては、Document treeとRelation treeの違い、型制約の弱さ、JUnit結果から仕様への間接リンクが残るため、強い編集時制約が必要になった場合にCustom Grammarを検討します。
 
-## CI Policy Checker
+## Policy Checker
 
 ```bash
 # JUnitを作ってからcheckerを実行
@@ -117,7 +117,7 @@ Checkerが検証するPolicy:
 
 `Feature` / `Behavior` / `Scenario`の件数に加え、実装coverage・test-linked coverage・JUnit passing coverageを別々に出します。JUnit結果の不合格はCheckerも失敗します。未テストScenarioの場合のエラーはUIDとタイトルを示します。
 
-### Checkerの自動テストと「仕様追加 → CI FAIL」実験
+### Checkerの自動テストと「仕様追加 → Checker FAIL」実験
 
 [`tests/test_policy_checker.py`](tests/test_policy_checker.py) は一時ディレクトリに小さな`.sdoc`・ソース・JUnit fixtureを作り、次を検証します。プロジェクト本体の仕様を壊してテストすることはありません。
 
@@ -130,10 +130,6 @@ Checkerが検証するPolicy:
 - JUnitがない/FAILEDならpassing coverageがN/A/低下しFAIL
 
 実際に本体にも`ORD-SCN-004: キャンセル済み注文を再度キャンセルできない`を追加し、relation/testを付けない状態でCheckerを実行しました。結果は`Scenario test coverage: 3 / 4 (75.0%)`、exit code `1`でした。その後、`cancel_order`の再キャンセル拒否と対応pytestを加えると、pytestとCheckerがPASSし、`4 / 4 (100.0%)`になりました。
-
-### GitHub Actions
-
-[`.github/workflows/ci.yml`](.github/workflows/ci.yml) はcheckout後、mise install、`uv sync --locked`、pytest/JUnit生成、Policy Checkerを実行します。pytestが失敗してもCheckerを実行してJUnit passing coverageを表示し、pytest自体の失敗でjob全体は失敗します。
 
 ## Checkerが使うStrictDoc API
 
@@ -157,7 +153,7 @@ Checkerが検証するPolicy:
 
 ## 最終評価: A — StrictDoc + 薄いPolicy Checkerで十分（現PoCの範囲）
 
-このPoCの4 Scenario、2 Behaviorの範囲では、標準Requirement + TAGS + Parent/Source Relationと外部Checkerだけで、**仕様にScenarioを加える → relation/testがなければexit 1 → テストを加えるとexit 0**のループが成立しました。CIでChecker実行を必須にする運用なら、Custom GrammarなしでもScenario Coverageを独自品質ゲートにできます。CheckerはStrictDocの構造を再実装せず、APIで読み取ったグラフにプロジェクト固有の数個のルールを適用する構成です。
+このPoCの4 Scenario、2 Behaviorの範囲では、標準Requirement + TAGS + Parent/Source Relationと外部Checkerだけで、**仕様にScenarioを加える → relation/testがなければexit 1 → テストを加えるとexit 0**のループが成立しました。必要なCIでChecker実行を必須にする運用なら、Custom GrammarなしでもScenario Coverageを独自品質ゲートにできます。CheckerはStrictDocの構造を再実装せず、APIで読み取ったグラフにプロジェクト固有の数個のルールを適用する構成です。
 
 ただし、TAGSはGrammar上の専用型ではありません。誤った/複数の種別、必須フィールドや許容Relationを編集時点でStrictDoc自身に制約させたい場合は、次段階でCustom Grammarに`FEATURE` / `BEHAVIOR` / `SCENARIO`の型を持たせる価値があります。それでも「srcにproduction実装がある」「test relationがpytest関数である」「JUnitで通った」といった横断ポリシーは外部Checker/CIの責任です。つまりCustom GrammarはPolicy Checkerを置き換えず、誤記防止と編集UIの改善を補います。
 
