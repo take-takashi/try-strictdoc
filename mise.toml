@@ -1,0 +1,4 @@
+[tools]
+"pypi:strictdoc" = "0.30.1"
+python = "3.12"
+uv = "0.12.23"

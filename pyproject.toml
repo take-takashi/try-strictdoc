@@ -1,0 +1,13 @@
+[project]
+name = "strictdoc-order-ssot-poc"
+version = "0.1.0"
+description = "StrictDocで機能・Behavior・Scenario・コード・テストの追跡を試すPoC"
+requires-python = ">=3.12,<3.13"
+dependencies = []
+
+[dependency-groups]
+dev = ["pytest>=8,<9"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
