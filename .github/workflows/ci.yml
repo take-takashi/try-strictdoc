@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  policy-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: jdx/mise-action@v2
+        with:
+          install: false
+
+      - name: Install mise tools and Python dependencies
+        id: setup
+        run: |
+          mise install
+          uv sync --locked
+
+      - name: Run pytest and write JUnit XML
+        id: pytest
+        run: uv run pytest -q --junitxml=reports/orders.pytest.junit.xml
+
+      - name: Check StrictDoc policies
+        if: ${{ always() && steps.setup.outcome == 'success' }}
+        run: uv run python scripts/check_spec.py

@@ -35,3 +35,18 @@ def test_reject_cancel_for_shipped_order():
     assert cancel_order(order) is False
     assert order.cancelled is False
     assert order.refunded is False
+
+
+def test_reject_cancel_for_already_cancelled_order():
+    """キャンセル済み注文を再度キャンセルできない。
+
+    @relation(ORD-SCN-004, scope=function)
+    """
+    order = Order(paid=False, shipped=False)
+
+    assert cancel_order(order) is True
+    assert order.cancelled is True
+
+    assert cancel_order(order) is False
+    assert order.cancelled is True
+    assert order.refunded is False

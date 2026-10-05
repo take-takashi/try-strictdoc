@@ -29,7 +29,7 @@ RELATIONS:
 UID: ORD-BEH-001
 TAGS: BEHAVIOR
 TITLE: 出荷前の注文はキャンセルできる
-STATEMENT: 出荷前の注文はキャンセルできる。決済済みの場合はキャンセル時に返金済み状態へ遷移する。
+STATEMENT: 出荷前の注文はキャンセルできる。決済済みの場合はキャンセル時に返金済み状態へ遷移する。キャンセル済み注文への再要求は拒否する。
 RELATIONS:
 - TYPE: Parent
   VALUE: ORD-FEAT-003
@@ -48,6 +48,15 @@ UID: ORD-SCN-002
 TAGS: SCENARIO
 TITLE: 決済済み注文をキャンセルして返金
 STATEMENT: 決済済み・未出荷の注文をキャンセルすると、キャンセル成功となり返金済み状態になる。
+RELATIONS:
+- TYPE: Parent
+  VALUE: ORD-BEH-001
+
+[REQUIREMENT]
+UID: ORD-SCN-004
+TAGS: SCENARIO
+TITLE: キャンセル済み注文を再度キャンセルできない
+STATEMENT: キャンセル済み注文を再度キャンセルすると拒否され、注文状態は変化しない。
 RELATIONS:
 - TYPE: Parent
   VALUE: ORD-BEH-001

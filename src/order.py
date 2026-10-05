@@ -17,7 +17,7 @@ def cancel_order(order: Order) -> bool:
     @relation(ORD-BEH-001, scope=function)
     @relation(ORD-BEH-002, scope=function)
     """
-    if order.shipped:
+    if order.shipped or order.cancelled:
         return False
 
     order.cancelled = True

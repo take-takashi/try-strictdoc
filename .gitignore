@@ -211,7 +211,7 @@ tempCodeRunnerFile.py
 # PyPI configuration file
 .pypirc
 
-# StrictDoc generated output/cache and test reports
+# StrictDoc generated HTML/server output and caches
 /output/
 /build/
 
